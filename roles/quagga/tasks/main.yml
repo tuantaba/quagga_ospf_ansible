@@ -1,0 +1,80 @@
+---
+- name: Ubuntu | install requirement packages
+  apt: name=software-properties-common state=present update_cache=yes
+  tags:
+    - quagga_install
+  
+#END HAPROXYINSTALL
+- name: install quagga
+  apt: name=quagga state=present
+  tags:
+    - quagga
+    - quagga_install
+
+- name: generate rc.local file
+  template: src=rc.local_{{ group_names[0] }} dest=/etc/rc.local owner=root group=root mode=0755
+  tags:
+    - quagga
+    - rclocal_genconf
+
+#routing setup
+- name: setup T1 table for policy routing
+  lineinfile: dest=/etc/iproute2/rt_tables line="1 T1"
+  tags:
+    - net_conf
+
+- name: setup T2 table for policy routing
+  lineinfile: dest=/etc/iproute2/rt_tables line="2 T2"
+  tags:
+    - net_conf
+
+- name: generate /opt/routing.sh
+  template: src=routing_{{ group_names[0] }} dest=/opt/routing.sh owner=root group=root mode=0755
+  tags:
+    - net_conf
+#end setup routing
+
+- stat: path=/etc/quagga/zebra.conf 
+  register: p
+  tags:
+    - quagga
+
+- name: ensure  zebra.conf file with zero bytes exists
+  file: path=/etc/quagga/zebra.conf state={{ "file" if  p.stat.exists else "touch"}} owner=quagga group=quaggavty mode=0640
+  tags:
+    - quagga
+
+- name: Ubuntu| generate file config quagga ospf
+  template: src=ospfd.conf_{{ group_names[0] }} dest=/etc/quagga/ospfd.conf owner=quagga group=quaggavty mode=0640
+  tags:
+    - quagga
+    - ospf_genconf
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+
+- name: Centos| generate file config quagga ospf
+  template: src=ospfd.conf_{{ group_names[0] }} dest=/etc/quagga/ospfd.conf owner=quagga group=root mode=0600
+  tags:
+    - quagga
+    - ospf_genconf
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+
+- name: copy daemons quagga to enable daemon
+  copy: src=daemons_ospf dest=/etc/quagga/daemons owner=quagga group=quagga mode=0640
+  tags:
+    - quagga
+    - ospf_genconf_other
+
+- name: Off booting quagga service with OS
+  shell: update-rc.d quagga remove
+  tags:
+    - quagga
+
+- name: Copy file onfig sysctl on Quagga
+  copy: src=sysctl.conf_quagga dest=/etc/sysctl.conf owner=root group=root mode=0644
+  tags:
+    - quagga
+    - sysctl
+
+  

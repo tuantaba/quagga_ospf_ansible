@@ -1,0 +1,9 @@
+---
+- hosts: all
+  gather_facts: yes
+  #  sudo: yes
+  #deprecated with warnings in version 2.0 and removed in version 2.2
+  become: true
+  roles:
+    - quagga
+

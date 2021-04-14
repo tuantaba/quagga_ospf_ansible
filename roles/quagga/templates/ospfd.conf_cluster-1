@@ -1,0 +1,33 @@
+! -*- ospf -*-
+!
+! OSPFd configuration
+!
+!
+hostname {{ inventory_hostname }}
+password 908a5205567353c8f7039e75e620e915
+!enable password please-set-at-here
+!
+log file /var/log/quagga/ospf.log
+log stdout
+log syslog
+!
+interface lo
+!
+interface {{ IFACE_OSPF }}
+  ip ospf hello-interval 1
+  ip ospf dead-interval 4
+  ip ospf network point-to-point
+  ip ospf message-digest-key 1 md5 3c8f7039e75
+!
+router ospf
+!  redistribute connected
+  log-adjacency-changes
+  ospf router-id {{ IP_OSPF }}
+  auto-cost reference-bandwidth 10000
+  network {{ NETWORK_OSPF }} area 1
+  area 1 authentication message-digest
+!
+debug ospf event
+debug ospf packet all
+!
+

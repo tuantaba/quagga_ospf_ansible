@@ -1,0 +1,5 @@
+[cluster-1]
+router_1 ansible_ssh_host=192.168.17.202 ansible_ssh_port=22 IFACE_OSPF="ens3" IP_OSPF="172.31.254.10" NETWORK_OSPF="172.31.254.8/30"
+router_2 ansible_ssh_host=192.168.17.102 ansible_ssh_port=22 IFACE_OSPF="ens3" IP_OSPF="172.31.248.10" NETWORK_OSPF="172.31.248.8/30"
+router_3 ansible_ssh_host=192.168.17.201 ansible_ssh_port=22 IFACE_OSPF="ens3" IP_OSPF="172.31.249.10" NETWORK_OSPF="172.31.249.8/30"
+
